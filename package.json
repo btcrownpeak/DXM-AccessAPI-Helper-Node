@@ -10,18 +10,13 @@
     "test": "mocha tests/mocha/*.js"
   },
   "devDependencies": {
-    "chai": "^4.2.0",
-    "grunt": "^1.0.4",
-    "grunt-contrib-clean": "^0.5.0",
-    "grunt-contrib-jshint": "^2.1.0",
-    "grunt-contrib-nodeunit": "^0.3.3"
+    "chai": "^4.2.0"
   },
   "dependencies": {
-    "istextorbinary": "^2.5.1",
-    "mocha": "^7.1.2",
+    "istextorbinary": "^6.0.0",
+    "mocha": "^10.2.0",
+    "node-fetch": "^3.3.1",
     "react-native-dotenv": "^0.2.0",
-    "request": "^2.88.0",
-    "request-promise": "^4.2.4",
-    "request-promise-native": "^1.0.7"
+    "set-cookie-parser": "^2.6.0"
   }
 }

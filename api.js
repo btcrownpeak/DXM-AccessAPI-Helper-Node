@@ -25,13 +25,14 @@ class api {
         this._error;
         this.cookie;
         this.https = require("https");
-        this.requestLib = require('request-promise');
         this.webAPIRoot = "/cpt_webservice/accessapi/";
         this.Asset = new Asset(this);
         this.AssetProperties = new AssetProperties(this);
         this.Report = new Report(this);
         this.Tools = new Tools(this);
         this.Workflow = new Workflow(this);
+        this.setCookie = require('set-cookie-parser');
+        this.fetch = require('node-fetch');
     }
 
 
@@ -77,12 +78,12 @@ class api {
             });
 
 
-        if (parentResponse !== undefined && Util.IsValidJSONString(parentResponse.body)) {
-            var jsonBody = JSON.parse(parentResponse.body);
+        if (parentResponse !== undefined) { 
+            var jsonBody = parentResponse;
             if (jsonBody.resultCode === Util.ResponseMessages.Success) {
                 //User was successfully authenticated
                 this._isAuthenticated = true;
-                this.cookie = parentResponse.headers["set-cookie"];
+                this.cookie = parentResponse.cookie;
             } else {
                 this._error = parentResponse;
             }
@@ -116,14 +117,13 @@ class api {
      * @param {function(object)} onError - function to run on error
      */
     async postRequest(urlPath, data, callback, onError) {
+
         var currentAPI = this;
         var attempt = 0;
 
         if (urlPath.startsWith("/")) {
             urlPath = urlPath.substring(1, urlPath.length);
         }
-
-
 
         const options = {
             url: "https://" + this.host + "/" + this.instance + this.webAPIRoot + urlPath, //URL of the instance
@@ -142,9 +142,18 @@ class api {
         if (this._isAuthenticated) {
             options.headers.cookie = this.cookie;
         }
+        
         try {
-            var response = await this.requestLib.post(options);
-            callback(response);
+            const response2 = await this.fetch("https://" + this.host + "/" + this.instance + this.webAPIRoot + urlPath, options); 
+
+            const data2 = await response2.json();
+            if (data2.resultCode === Util.ResponseMessages.Success) {
+                var combinedCookieHeader = response2.headers.get('set-cookie');
+                data2.cookie = this.setCookie.splitCookiesString(combinedCookieHeader);  
+                //data2.cookie = response2.headers.getSetCookie(); 
+            }
+
+           callback(data2);
         } catch (error) {
             var timeoutWait = Util.InitialTimeoutWait;
 
@@ -195,8 +204,9 @@ class api {
             options.headers.cookie = this.cookie;
         }
         try {
-            var response = await this.requestLib.get(options);
-            callback(response);
+            const response2 = await fetch("https://" + this.host + "/" + this.instance + this.webAPIRoot + urlPath, options); 
+            const data2 = await response2.json();
+            callback(data2);
         } catch (error) {
             var timeoutWait = Util.InitialTimeoutWait;
 
